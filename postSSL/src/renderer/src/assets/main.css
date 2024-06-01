@@ -1,0 +1,44 @@
+@import './base.css';
+@import './react-resizable.css';
+@import 'primereact/resources/themes/mdc-light-indigo/theme.css';
+
+/* body {
+  overflow: hidden;
+} */
+
+.p-menuitem-link {
+  padding: 8px;
+  font-size: 12px;
+}
+.p-menuitem-content {
+  border: 1px solid;
+  border-color: var(--ant-color-primary);
+}
+
+table,
+th,
+td {
+  border: 1px solid;
+  border-color: var(--ant-color-border);
+  border-collapse: collapse;
+}
+
+th {
+  color: gray;
+  text-align: left;
+  padding: 4px 11px;
+}
+
+* {
+  font-family: var(--ant-font-family) !important;
+}
+
+.ace_editor * {
+  font-family: monospace !important;
+}
+
+.ant-tabs,
+.ant-tabs-tabpane,
+.ant-tabs-content {
+  height: 100%;
+}

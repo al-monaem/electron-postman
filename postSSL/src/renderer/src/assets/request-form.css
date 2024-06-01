@@ -1,0 +1,6 @@
+.raw-language .ant-select-selector {
+  border: none !important;
+  font-size: 12px !important;
+  color: var(--ant-color-primary) !important;
+  font-weight: bold !important;
+}
