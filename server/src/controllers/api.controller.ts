@@ -186,7 +186,9 @@ export const createExample = async (req: Request, res: Response) => {
     return res.status(201).json(api);
   } catch (error) {
     console.log(error);
-    res.status(400).json(error.message);
+    return res.status(400).json({
+      message: error.message,
+    });
   }
 };
 

@@ -8,7 +8,9 @@
     "noImplicitAny": true,
     "paths": {
       "@controllers/*": ["controllers/*"]
-    }
+    },
+    "typeRoots": ["node_modules/@types"],
+    "esModuleInterop": true
   },
   "include": ["src/**/*"]
 }

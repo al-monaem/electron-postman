@@ -1,5 +1,8 @@
 import { Api, Collection } from 'db/models';
-import { Request, Response, response } from 'express';
+import { Request, Response } from 'express';
+import _ from 'lodash';
+
+var parser = require('xml2json');
 
 export const handleMockRequest = async (req: Request, res: Response) => {
   try {
@@ -18,49 +21,86 @@ export const handleMockRequest = async (req: Request, res: Response) => {
     for (const api of apis) {
       const response = validateApi(api, req);
       if (response) {
-        return res.status(200).json(response);
+        return res.status(response.code || 200).json(response.body);
       }
     }
 
-    return res
-      .status(404)
-      .json({ message: 'No mock example found with the given parameters' });
+    return res.status(600).json({
+      message: 'No mock example found with the given parameters',
+      code: 600,
+    });
   } catch (error) {
-    return res.status(500).json(error);
+    return res.status(600).json({
+      message: error.message,
+      code: 600,
+    });
   }
 };
 
 const validateApi = (api: any, req: Request): any => {
   try {
-    const apiUrl = new URL(api.request.url.raw);
-    const payload = {
-      path: apiUrl.pathname,
-      headers: api.request.header,
-      body: api.request.body.raw,
-      method: api.request.method,
-    };
+    for (const response of api.response) {
+      console.log(response);
+      const apiUrl = new URL(response.originalRequest.url.raw);
+      const payload = {
+        path: apiUrl.pathname,
+        headers: response.header,
+        body: response.body,
+        method: response.originalRequest.method,
+      };
 
-    if (payload.method !== req.method) {
-      return null;
-    }
+      if (payload.method !== req.method) {
+        continue;
+      }
 
-    const path = req.originalUrl.split('?')[0];
+      const path = req.originalUrl.split('?')[0];
 
-    if (path !== payload.path) {
-      return null;
-    }
+      if (path !== payload.path) {
+        continue;
+      }
 
-    console.log(api.request.url.raw);
+      const apiQuery = response.originalRequest.url.raw?.split('?', 2)[1];
+      let apiQueryObject = {};
 
-    const apiQuery = api.request.url.raw?.split('?', 2)[1];
-    console.log(apiQuery);
+      if (apiQuery) {
+        apiQueryObject = Object.fromEntries(
+          apiQuery.split('&').map((query: any) => query.split('='))
+        );
+      }
 
-    if (apiQuery) {
-      const apiQueryObject = Object.fromEntries(
-        apiQuery.split('&').map((query: any) => query.split('='))
-      );
+      if (!_.isEqual(apiQueryObject, req.query)) {
+        continue;
+      }
 
-      console.log(apiQueryObject);
+      if (req.method === 'POST' || req.method === 'PUT') {
+        if (req.headers['content-type'].includes('application/json')) {
+          try {
+            if (!_.isEqual(req.body, JSON.parse(payload.body))) {
+              continue;
+            }
+          } catch (error) {
+            console.log(error);
+            continue;
+          }
+        } else if (req.headers['content-type'].includes('application/xml')) {
+          try {
+            if (
+              !_.isEqual(parser.toJson(req.body), parser.toJson(payload.body))
+            ) {
+              continue;
+            }
+          } catch (error) {
+            console.log(error);
+            continue;
+          }
+        } else {
+          if (req.body !== payload.body) {
+            continue;
+          }
+        }
+      }
+
+      return response;
     }
 
     return null;
