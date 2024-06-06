@@ -1,5 +1,5 @@
 import { Api } from '@renderer/app/interfaces/models'
-import { Button, Input, Popover, Select, Space, Tabs, theme } from 'antd'
+import { Button, Input, Popover, Select, Space, Tabs, Tag, theme } from 'antd'
 import QueryParamForm from './QueryParamForm'
 import RequestHeaderForm from './RequestHeaderForm'
 import RequestBodyForm from './RequestBodyForm'
@@ -7,6 +7,7 @@ import store from '@renderer/app/store'
 import { updateApi } from '@renderer/app/store/mock/tabSlice'
 import ResponseBodyForm from './ResponseBodyForm'
 import { TabTypes } from '@renderer/utilities/TabTypes'
+import { sendMockRequest } from '@renderer/controllers/api.controller'
 
 const requestOptions = [
   {
@@ -78,6 +79,64 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
     store.dispatch(updateApi(api))
   }
 
+  const handleSendRequest = async () => {
+    const api: any = JSON.parse(JSON.stringify(props.api))
+
+    const headers = api.request.header.reduce((acc: any, header: any) => {
+      if (!header.disabled) {
+        acc[header.key] = header.value
+      }
+      return acc
+    }, {})
+
+    const body = api.request.body?.raw
+    const method = api.request.method
+    let url: any = api.request.url?.raw
+
+    const queryParams = api.request.url?.query
+      .filter((query: any) => !query.disabled)
+      .map((query: any) => `${query.key}=${query.value}`)
+      .join('&')
+
+    if (queryParams) url += `?${queryParams}`
+
+    const response = await sendMockRequest(body, headers, method, url)
+
+    api.response.header = response.headers
+    api.response.code = response.status
+    api.response.body = response.data
+
+    if (response.headers['content-type'].includes('application/json')) {
+      api.response.mode = 'json'
+      api.response.body = JSON.stringify(response.data)
+      api.response.options = {
+        raw: {
+          language: 'json'
+        }
+      }
+    } else if (response.headers['content-type'].includes('application/xml')) {
+      api.response.mode = 'xml'
+      api.response.options = {
+        raw: {
+          language: 'xml'
+        }
+      }
+    } else if (response.headers['content-type'].includes('text/html')) {
+      api.response.mode = 'raw'
+      api.response.options = {
+        raw: {
+          language: 'html'
+        }
+      }
+    } else {
+      api.response.mode = 'none'
+    }
+
+    console.log(api.response)
+
+    store.dispatch(updateApi(api))
+  }
+
   return (
     <div className="flex flex-grow flex-col p-3">
       <div className="flex items-start space-x-4">
@@ -121,13 +180,24 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
         </Space.Compact>
         {props.api.type === TabTypes.CREATE_API && (
           <Popover content={'Save this api to start sending request'}>
-            <Button disabled={true} size="large" type="primary" className="!font-semibold">
+            <Button
+              onClick={() => handleSendRequest()}
+              disabled={true}
+              size="large"
+              type="primary"
+              className="!font-semibold"
+            >
               Send
             </Button>
           </Popover>
         )}
         {props.api.type === TabTypes.API && (
-          <Button size="large" type="primary" className="!font-semibold">
+          <Button
+            onClick={() => handleSendRequest()}
+            size="large"
+            type="primary"
+            className="!font-semibold"
+          >
             Send
           </Button>
         )}
@@ -200,7 +270,9 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
         <div className="absolute right-0 w-[200px] top-2 flex items-center space-x-2">
           <div className="mr-2 text-gray-500 font-semibold">Status Code</div>
           {props.api.type !== TabTypes.API_RESPONSE && props.api.type !== TabTypes.CREATE_API ? (
-            <div></div>
+            <div>
+              <Tag className="font-semibold">{props.api.response.code || undefined}</Tag>
+            </div>
           ) : (
             <Input
               value={props.api.response?.code || undefined}

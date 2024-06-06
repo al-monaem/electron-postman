@@ -5,6 +5,10 @@ const axiosAppInstance = axios.create({
   baseURL: `${import.meta.env.VITE_BACKEND_URL}/app`
 })
 
+export const axiosMockInstance = axios.create({
+  baseURL: `${import.meta.env.VITE_BACKEND_URL}`
+})
+
 // const refreshAccessToken = (refreshToken) => {
 //   // Example:
 //   return axiosInstance.post(
@@ -33,8 +37,8 @@ axiosAppInstance.interceptors.request.use(
 
 axiosAppInstance.interceptors.response.use(
   (response) => {
-    if (response.status === 200) return response
-    showToast(response.status, response.data.message)
+    // if (response.status === 200) return response
+    // showToast(response.status, response.data.message)
     return response
   },
   async (error) => {

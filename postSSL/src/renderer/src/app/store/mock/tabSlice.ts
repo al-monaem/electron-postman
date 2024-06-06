@@ -50,7 +50,7 @@ const tabSlice = createSlice({
           if (action.payload.type === TabTypes.CREATE_API) {
             const example_id = `create-${Math.round(Math.random() * 12471386)}`
 
-            const api: Api = {
+            const api: any = {
               _id: action.payload._id,
               name: 'New Api',
               type: TabTypes.CREATE_API,
@@ -73,14 +73,12 @@ const tabSlice = createSlice({
                   raw: `${import.meta.env.VITE_BACKEND_URL}/${action.payload.collection_id}`
                 }
               },
-              response: [
-                {
-                  _id: example_id,
-                  body: '',
-                  name: '',
-                  header: []
-                }
-              ],
+              response: {
+                _id: example_id,
+                body: '',
+                name: '',
+                header: []
+              },
               active_example_id: example_id
             }
 
@@ -168,6 +166,7 @@ const tabSlice = createSlice({
           const example = action.payload.response?.find(
             (response: any) => response._id === action.payload.active_example_id
           )
+
           const api: Api = {
             _id: action.payload._id,
             collection_id: action.payload.collection_id,
@@ -240,7 +239,7 @@ const tabSlice = createSlice({
           state.tabs[tabIndex] = {
             ...tab,
             name: action.payload.name,
-            modified: true,
+            modified: action.payload.modified !== undefined ? action.payload.modified : true,
             request: action.payload.request,
             response: action.payload.response,
             type: action.payload.type || tab.type

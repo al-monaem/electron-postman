@@ -1,6 +1,11 @@
 import store from '@renderer/app/store'
 import { insertIntoTab, updateApi, updateBasics } from '@renderer/app/store/mock/tabSlice'
-import { createApi, createExample, updateApiReqeust } from '@renderer/controllers/api.controller'
+import {
+  createApi,
+  createExample,
+  updateApiReqeust,
+  updateExample
+} from '@renderer/controllers/api.controller'
 import { TabTypes } from '@renderer/utilities/TabTypes'
 import { Breadcrumb, Button, Input } from 'antd'
 import { useEffect, useState } from 'react'
@@ -45,6 +50,11 @@ const BreadCrumb = ({ children, tab, create }) => {
   const handleExampleCreate = async () => {
     const item = JSON.parse(JSON.stringify(tab))
     await createExample(item)
+  }
+
+  const handleUpdateExample = async () => {
+    const item = JSON.parse(JSON.stringify(tab))
+    await updateExample(item)
   }
 
   useEffect(() => {
@@ -227,6 +237,7 @@ const BreadCrumb = ({ children, tab, create }) => {
               else handleSave()
             } else {
               if (tab.type === TabTypes.API) handleUpdateAPI()
+              if (tab.type === TabTypes.API_RESPONSE) handleUpdateExample()
             }
           }}
         >

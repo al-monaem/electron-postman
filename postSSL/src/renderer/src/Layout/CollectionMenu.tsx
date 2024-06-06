@@ -85,6 +85,8 @@ const CollectionMenu = () => {
             type: TabTypes.API_RESPONSE,
             data: {
               ...data.data,
+              ...example,
+              _id: _item._id,
               active_example_id: example._id
             }
           })

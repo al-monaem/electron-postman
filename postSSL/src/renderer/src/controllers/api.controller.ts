@@ -1,4 +1,4 @@
-import axiosAppInstance from '@renderer/app/axios'
+import axiosAppInstance, { axiosMockInstance } from '@renderer/app/axios'
 import { Api } from '@renderer/app/interfaces/models'
 import store from '@renderer/app/store'
 import { updateApi, updateTabId } from '@renderer/app/store/mock/tabSlice'
@@ -68,6 +68,7 @@ export const createExample = async (example: any) => {
 export const updateApiReqeust = async (api: any) => {
   try {
     const response = await axiosAppInstance.put(`/api`, api)
+    console.log(response)
     if (response.status === 201) {
       store.dispatch(
         updateApi({
@@ -82,5 +83,87 @@ export const updateApiReqeust = async (api: any) => {
   } catch (error) {
     console.log(error)
     return 500
+  }
+}
+
+export const updateExample = async (example: any) => {
+  try {
+    const response = await axiosAppInstance.put(`/api/example`, example)
+    if (response.status === 201) {
+      store.dispatch(
+        updateApi({
+          ...example,
+          ...response.data,
+          request: response.data.response.originalRequest,
+          modified: false
+        })
+      )
+      await getCollections()
+    }
+    return 500
+  } catch (error) {
+    console.log(error)
+    return 500
+  }
+}
+
+export const sendMockRequest = async (
+  body: any,
+  header: any,
+  method: string,
+  url: string
+): Promise<any> => {
+  try {
+    if (method === 'GET') {
+      const response = await axiosMockInstance.get(url, {
+        headers: {
+          ...header
+        }
+      })
+      return response
+    }
+
+    if (method === 'POST') {
+      const response = await axiosMockInstance.post(url, body, {
+        headers: {
+          ...header
+        }
+      })
+      return response
+    }
+
+    if (method === 'PUT') {
+      const response = await axiosMockInstance.put(url, body, {
+        headers: {
+          ...header
+        }
+      })
+      return response
+    }
+
+    if (method === 'PATCH') {
+      const response = await axiosMockInstance.patch(url, body, {
+        headers: {
+          ...header
+        }
+      })
+      return response
+    }
+
+    if (method === 'DELETE') {
+      const response = await axiosMockInstance.delete(url, {
+        headers: {
+          ...header
+        }
+      })
+      return response
+    }
+
+    return {
+      status: 500,
+      message: 'Invalid method'
+    }
+  } catch (error: any) {
+    return error.response || error
   }
 }

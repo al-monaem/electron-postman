@@ -9,11 +9,15 @@ import AceEditor from 'react-ace'
 import useDebounce from '@renderer/hooks/useDebounce'
 import { useEffect, useState } from 'react'
 
+import * as _ from 'lodash'
+
 const { Option } = Select
 
 const RequestBodyForm = (props: { api: Api }) => {
-  const [requestBody, setRequestBody] = useState('')
+  const [requestBody, setRequestBody] = useState(props.api.request.body?.raw || '')
   const requestBodyDebouncedValue = useDebounce(requestBody, 1000)
+
+  const _api = JSON.parse(JSON.stringify(props.api))
 
   const handleModeChange = (e: any) => {
     const api: Api = JSON.parse(JSON.stringify(props.api))
@@ -29,7 +33,7 @@ const RequestBodyForm = (props: { api: Api }) => {
           language: 'json'
         }
       }
-
+    api.modified = !_.isEqual(api, _api)
     store.dispatch(updateApi(api))
   }
 
@@ -44,6 +48,7 @@ const RequestBodyForm = (props: { api: Api }) => {
         language: value
       }
     }
+    api.modified = !_.isEqual(api, _api)
     store.dispatch(updateApi(api))
   }
 
@@ -56,6 +61,8 @@ const RequestBodyForm = (props: { api: Api }) => {
     }
 
     api.request.body.raw = requestBodyDebouncedValue
+
+    api.modified = !_.isEqual(api, _api)
 
     store.dispatch(updateApi(api))
   }, [requestBodyDebouncedValue])
