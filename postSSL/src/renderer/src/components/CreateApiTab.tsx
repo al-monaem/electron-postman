@@ -8,6 +8,7 @@ import { updateApi } from '@renderer/app/store/mock/tabSlice'
 import ResponseBodyForm from './ResponseBodyForm'
 import { TabTypes } from '@renderer/utilities/TabTypes'
 import { sendMockRequest } from '@renderer/controllers/api.controller'
+import _ from 'lodash'
 
 const requestOptions = [
   {
@@ -33,6 +34,8 @@ const requestOptions = [
 ]
 
 const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) => {
+  const _api = JSON.parse(JSON.stringify(props.api))
+
   const { token } = theme.useToken()
 
   const handleUrlChange = (e: any) => {
@@ -70,12 +73,31 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
       api.request.url.query = []
     }
 
+    if (!_.isEqual(api, _api)) {
+      api.modified = true
+    } else {
+      api.modified = false
+    }
+
     store.dispatch(updateApi(api))
   }
 
   const handleStatusCodeChange = (e: any) => {
     const api: Api = JSON.parse(JSON.stringify(props.api))
     api.defaultStatusCode = e.target.value
+    store.dispatch(updateApi(api))
+  }
+
+  const handleMethodChange = (value: string) => {
+    const api: Api = JSON.parse(JSON.stringify(props.api))
+    api.request.method = value
+
+    if (_.isEqual(api, _api)) {
+      api.modified = false
+    } else {
+      api.modified = true
+    }
+
     store.dispatch(updateApi(api))
   }
 
@@ -101,6 +123,13 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
     if (queryParams) url += `?${queryParams}`
 
     const response = await sendMockRequest(body, headers, method, url)
+
+    // if (response.status && response.status === 600) {
+    //   delete response.status
+    //   api.response.body = JSON.stringify(response)
+    //   store.dispatch(updateApi(api))
+    //   return
+    // }
 
     api.response.header = response.headers
     api.response.code = response.status
@@ -132,8 +161,6 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
       api.response.mode = 'none'
     }
 
-    console.log(api.response)
-
     store.dispatch(updateApi(api))
   }
 
@@ -145,6 +172,7 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
             size="large"
             className="w-[10%]"
             defaultValue={props.api.request.method}
+            onChange={(e) => handleMethodChange(e)}
             options={requestOptions}
           />
           <Input

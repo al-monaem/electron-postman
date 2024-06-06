@@ -1,7 +1,12 @@
 import axiosAppInstance, { axiosMockInstance } from '@renderer/app/axios'
 import { Api } from '@renderer/app/interfaces/models'
 import store from '@renderer/app/store'
-import { updateApi, updateTabId } from '@renderer/app/store/mock/tabSlice'
+import {
+  removeActiveTab,
+  removeFromTab,
+  updateApi,
+  updateTabId
+} from '@renderer/app/store/mock/tabSlice'
 import { TabTypes } from '@renderer/utilities/TabTypes'
 import { getCollections } from './collection.controller'
 
@@ -19,6 +24,13 @@ export const createApi = async (api: any) => {
       store.dispatch(
         updateApi({
           ..._api,
+          request: {
+            ..._api.request,
+            url: {
+              ..._api.request.url,
+              raw: _api.request.url.raw?.split('?')[0]
+            }
+          },
           type: TabTypes.API,
           name: api.name,
           modified: false
@@ -39,21 +51,7 @@ export const createExample = async (example: any) => {
     const response = await axiosAppInstance.post('/api/example', example)
 
     if (response.status === 201) {
-      const _api = response.data.api
-      const payload: Api = {
-        ...example,
-        new_id: _api._id
-      }
-
-      store.dispatch(updateTabId(payload))
-      store.dispatch(
-        updateApi({
-          ...example,
-          active_example_id: response.data._id,
-          response: response.data,
-          request: response.data.originalRequest
-        })
-      )
+      store.dispatch(removeActiveTab())
 
       await getCollections()
       return 200
@@ -74,6 +72,13 @@ export const updateApiReqeust = async (api: any) => {
         updateApi({
           ...api,
           ...response.data,
+          request: {
+            ...response.data.request,
+            url: {
+              ...response.data.request.url,
+              raw: response.data.request.url.raw.split('?')[0]
+            }
+          },
           modified: false
         })
       )
@@ -94,7 +99,13 @@ export const updateExample = async (example: any) => {
         updateApi({
           ...example,
           ...response.data,
-          request: response.data.response.originalRequest,
+          request: {
+            ...response.data.response.originalRequest,
+            url: {
+              ...response.data.response.originalRequest.url,
+              raw: response.data.response.originalRequest.url?.raw?.split('?')[0]
+            }
+          },
           modified: false
         })
       )
@@ -114,6 +125,10 @@ export const sendMockRequest = async (
   url: string
 ): Promise<any> => {
   try {
+    if (!header['Content-Type']) {
+      header['Content-Type'] = 'application/json'
+    }
+
     if (method === 'GET') {
       const response = await axiosMockInstance.get(url, {
         headers: {
@@ -164,6 +179,6 @@ export const sendMockRequest = async (
       message: 'Invalid method'
     }
   } catch (error: any) {
-    return error.response || error
+    return error.response ? error.response : error
   }
 }

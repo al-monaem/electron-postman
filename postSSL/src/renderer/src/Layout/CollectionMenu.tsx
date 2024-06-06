@@ -182,6 +182,13 @@ const CollectionMenu = () => {
                     body: '',
                     header: []
                   },
+                  request: {
+                    ...data.request,
+                    url: {
+                      ...data.request.url,
+                      raw: data.request.url.raw?.split('?')[0]
+                    }
+                  },
                   modified: true
                 }
                 store.dispatch(insertIntoTab(payload))

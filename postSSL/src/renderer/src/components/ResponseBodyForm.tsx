@@ -31,22 +31,17 @@ const ResponseBodyForm = (props: { api: any }) => {
     store.dispatch(updateApi(api))
   }
 
-  // useEffect(() => {
-  //   const editor = editorRef.current.editor
-  //   const beautify = ace.require('ace/ext/beautify')
-  //   beautify.beautify(editor.session)
-  // }, [props.api])
+  useEffect(() => {
+    console.log(props.api)
+  }, [props.api])
 
   return (
     <AceEditor
       ref={editorRef}
-      onLoad={() => {
-        const editor = editorRef.current?.editor
-        const beautify = ace.require('ace/ext/beautify')
-        beautify.beautify(editor.session)
-      }}
       mode={
-        props.api.type === TabTypes.CREATE_API
+        props.api.type === TabTypes.CREATE_API ||
+        props.api.type === TabTypes.CREATE_API_RESPONSE ||
+        props.api.type === TabTypes.API_RESPONSE
           ? props.api.request.body?.options?.raw.language
           : props.api.type === TabTypes.API
             ? props.api.response.mode === 'none'
@@ -71,7 +66,7 @@ const ResponseBodyForm = (props: { api: any }) => {
         props.api.type !== TabTypes.CREATE_API &&
         props.api.type !== TabTypes.CREATE_API_RESPONSE
       }
-      value={props.api.response?.body || ''}
+      value={props.api.response?.body}
     />
   )
 }

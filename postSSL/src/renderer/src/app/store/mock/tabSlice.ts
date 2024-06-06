@@ -150,7 +150,13 @@ const tabSlice = createSlice({
             name: action.payload.name,
             type: TabTypes.API,
             modified: false,
-            request: action.payload.request,
+            request: {
+              ...action.payload.request,
+              url: {
+                ...action.payload.request.url,
+                raw: action.payload.request.url.raw?.split('?')[0]
+              }
+            },
             response: {
               body: '',
               header: [],
@@ -174,7 +180,13 @@ const tabSlice = createSlice({
             name: action.payload.name,
             type: TabTypes.API_RESPONSE,
             modified: false,
-            request: example.originalRequest,
+            request: {
+              ...example.originalRequest,
+              url: {
+                ...example.originalRequest.url,
+                raw: example.originalRequest.url.raw?.split('?')[0]
+              }
+            },
             response: example,
             active_example_id: action.payload.active_example_id
           }
@@ -268,6 +280,9 @@ const tabSlice = createSlice({
           _id: action.payload.new_id
         }
       }
+    },
+    removeActiveTab: (state) => {
+      state.tabs.splice(state.activeTab, 1)
     }
   }
 })
@@ -281,7 +296,8 @@ export const {
   updateApi,
   updateBasics,
   updateTabId,
-  refreshTabs
+  refreshTabs,
+  removeActiveTab
 } = tabSlice.actions
 
 export default tabSlice.reducer
