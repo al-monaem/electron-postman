@@ -10,10 +10,15 @@ import { TabTypes } from '@renderer/utilities/TabTypes'
 import { Breadcrumb, Button, Input } from 'antd'
 import { useEffect, useState } from 'react'
 import { BsCollectionFill } from 'react-icons/bs'
+import { FaFolderOpen } from 'react-icons/fa'
 import { IoIosSave } from 'react-icons/io'
+import { TbApi } from 'react-icons/tb'
 import { useSelector } from 'react-redux'
+import _ from 'lodash'
 
 const BreadCrumb = ({ children, tab, create }) => {
+  const [_api] = useState(JSON.parse(JSON.stringify(tab)))
+
   const collections = useSelector((state: any) => state.userReducer.collections)
   const folders = useSelector((state: any) => state.userReducer.folders)
   const apis = useSelector((state: any) => state.userReducer.apis)
@@ -23,14 +28,24 @@ const BreadCrumb = ({ children, tab, create }) => {
   const [items, setItems]: any = useState([])
 
   const handleNameChange = (e: any) => {
+    const item = JSON.parse(JSON.stringify(tab))
+    _api.modified = item.modified
+
     if (tab.type !== TabTypes.API_RESPONSE && tab.type !== TabTypes.CREATE_API_RESPONSE) {
-      const item = JSON.parse(JSON.stringify(tab))
       item.name = e.target.value
+
+      if (!_.isEqual(item, _api)) item.modified = true
+      else item.modified = false
 
       store.dispatch(updateBasics(item))
     } else {
-      const item = JSON.parse(JSON.stringify(tab))
       item.response.name = e.target.value
+
+      console.log(item)
+      console.log(_api)
+
+      if (!_.isEqual(item, _api)) item.modified = true
+      else item.modified = false
 
       store.dispatch(updateApi(item))
     }
@@ -100,7 +115,12 @@ const BreadCrumb = ({ children, tab, create }) => {
         })
       }
       breadCrumb.push({
-        title: tab.name
+        title: (
+          <div className="flex items-center space-x-1">
+            <FaFolderOpen className="w-3 h-3" />
+            <div>{tab.name}</div>
+          </div>
+        )
       })
       setItems(breadCrumb)
     }
@@ -130,7 +150,7 @@ const BreadCrumb = ({ children, tab, create }) => {
                 }}
               >
                 <span className="flex items-center space-x-1">
-                  <BsCollectionFill className="w-3 h-3" />
+                  <FaFolderOpen className="w-3 h-3" />
                   <span>{folder.name}</span>
                 </span>
               </a>
@@ -184,7 +204,7 @@ const BreadCrumb = ({ children, tab, create }) => {
                 }}
               >
                 <span className="flex items-center space-x-1">
-                  <BsCollectionFill className="w-3 h-3" />
+                  <TbApi className="w-3 h-3" />
                   <span>{api.name}</span>
                 </span>
               </a>
@@ -229,7 +249,13 @@ const BreadCrumb = ({ children, tab, create }) => {
         <Button
           className="!flex !font-semibold items-center justify-center"
           icon={<IoIosSave className="w-4 h-4" />}
-          disabled={!tab.modified}
+          disabled={
+            tab.type !== TabTypes.CREATE_API &&
+            tab.type !== TabTypes.CREATE_API_RESPONSE &&
+            tab.type !== TabTypes.CREATE_COLLECTION &&
+            tab.type !== TabTypes.CREATE_FOLDER &&
+            !tab.modified
+          }
           type="primary"
           onClick={() => {
             if (create) {

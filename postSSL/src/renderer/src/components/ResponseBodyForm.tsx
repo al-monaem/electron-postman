@@ -1,8 +1,7 @@
 import AceEditor from 'react-ace'
-
 import 'ace-builds/src-noconflict/mode-json'
 import 'ace-builds/src-noconflict/mode-xml'
-import 'ace-builds/src-noconflict/theme-github'
+import 'ace-builds/src-noconflict/theme-twilight'
 import 'ace-builds/src-noconflict/ext-beautify'
 import 'ace-builds/src-noconflict/mode-html'
 import 'ace-builds/src-noconflict/mode-text'
@@ -11,11 +10,11 @@ import ace from 'ace-builds/src-noconflict/ace'
 import { TabTypes } from '@renderer/utilities/TabTypes'
 import store from '@renderer/app/store'
 import { updateApi } from '@renderer/app/store/mock/tabSlice'
+import { useRef } from 'react'
+
+import _ from 'lodash'
 
 ace.config.set('workerPath', 'https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12')
-
-import * as _ from 'lodash'
-import { useEffect, useRef } from 'react'
 
 const ResponseBodyForm = (props: { api: any }) => {
   const _api = JSON.parse(JSON.stringify(props.api))
@@ -31,10 +30,6 @@ const ResponseBodyForm = (props: { api: any }) => {
     store.dispatch(updateApi(api))
   }
 
-  useEffect(() => {
-    console.log(props.api)
-  }, [props.api])
-
   return (
     <AceEditor
       ref={editorRef}
@@ -49,7 +44,7 @@ const ResponseBodyForm = (props: { api: any }) => {
               : props.api.response.options?.raw.language
             : 'json'
       }
-      theme="github"
+      theme="twilight"
       onChange={(value) => {
         if (props.api.type !== TabTypes.API) {
           setRequestBody(value)

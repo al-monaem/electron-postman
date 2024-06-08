@@ -1,9 +1,20 @@
-import { Folder, Collection, Api } from "db/models";
+import { Folder, Collection, Api, UserCollection } from "db/models";
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 
-export const getCollections = async (req: Request, res: Response) => {
+export const getCollections = async (req: any, res: Response) => {
   try {
-    const collections: any = await Collection.find().lean();
+    const user_collections = await UserCollection.find({
+      user_id: mongoose.Types.ObjectId.createFromHexString(req.user_id),
+    }).lean();
+
+    const col_ids = user_collections.map((col) => col.collection_id);
+
+    const collections: any = await Collection.find({
+      _id: {
+        $in: col_ids,
+      },
+    }).lean();
 
     for (const collection of collections) {
       const folders: any = await Folder.find({
@@ -27,8 +38,15 @@ export const getCollections = async (req: Request, res: Response) => {
       collection.item = [...folders, ...apis];
     }
 
-    const folders = await Folder.find().lean();
-    const apis = await Api.find().lean();
+    const folders: any = [];
+    const apis: any = [];
+
+    for (const collection_id of col_ids) {
+      const _folders = await Folder.find({ collection_id }).lean();
+      folders.push(..._folders);
+      const _apis = await Api.find({ collection_id }).lean();
+      apis.push(..._apis);
+    }
 
     return res.status(200).json({
       collections,
@@ -43,7 +61,7 @@ export const getCollections = async (req: Request, res: Response) => {
   }
 };
 
-export const createCollection = async (req: Request, res: Response) => {
+export const createCollection = async (req: any, res: Response) => {
   try {
     const { name, description, schema, _exporter_id } = req.body;
 
@@ -56,8 +74,39 @@ export const createCollection = async (req: Request, res: Response) => {
 
     await collection.save();
 
+    await UserCollection.create({
+      collection_id: collection._id,
+      user_id: req["user_id"],
+    });
+
     return res.status(201).json({
       message: "Collection created successfully",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      message: error.message,
+    });
+  }
+};
+
+export const deleteCollection = async (req: Request, res: Response) => {
+  try {
+    const { collection_id } = req.params;
+
+    const collection = await Collection.findById(collection_id);
+    if (!collection) throw new Error("Collection not found");
+
+    await Folder.deleteMany({
+      collection_id: collection._id,
+    });
+    await Api.deleteMany({
+      collection_id: collection._id,
+    });
+    await collection.deleteOne();
+
+    return res.status(201).json({
+      message: "Collection deleted successfully",
     });
   } catch (error) {
     console.log(error);

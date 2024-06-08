@@ -1,12 +1,7 @@
 import axiosAppInstance, { axiosMockInstance } from '@renderer/app/axios'
 import { Api } from '@renderer/app/interfaces/models'
 import store from '@renderer/app/store'
-import {
-  removeActiveTab,
-  removeFromTab,
-  updateApi,
-  updateTabId
-} from '@renderer/app/store/mock/tabSlice'
+import { removeActiveTab, updateApi, updateTabId } from '@renderer/app/store/mock/tabSlice'
 import { TabTypes } from '@renderer/utilities/TabTypes'
 import { getCollections } from './collection.controller'
 
@@ -112,6 +107,54 @@ export const updateExample = async (example: any) => {
       await getCollections()
     }
     return 500
+  } catch (error) {
+    console.log(error)
+    return 500
+  }
+}
+
+export const deleteExample = async (api_id: string, example_id: string) => {
+  try {
+    await axiosAppInstance.delete(`api/example/${api_id}/${example_id}`)
+    await getCollections()
+
+    return 200
+  } catch (error) {
+    console.log(error)
+    return 500
+  }
+}
+
+export const deleteRequest = async (api_id: string) => {
+  try {
+    await axiosAppInstance.delete(`api/${api_id}`)
+    await getCollections()
+
+    return 200
+  } catch (error) {
+    console.log(error)
+    return 500
+  }
+}
+
+export const deleteFolder = async (folder_id: string) => {
+  try {
+    await axiosAppInstance.delete(`folder/${folder_id}`)
+    await getCollections()
+
+    return 200
+  } catch (error) {
+    console.log(error)
+    return 500
+  }
+}
+
+export const deleteCollection = async (collection_id: string) => {
+  try {
+    await axiosAppInstance.delete(`collection/${collection_id}`)
+    await getCollections()
+
+    return 200
   } catch (error) {
     console.log(error)
     return 500

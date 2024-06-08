@@ -4,6 +4,7 @@ import { ConfigProvider, theme } from 'antd'
 import { useLayoutEffect, useRef } from 'react'
 import { Toast } from 'primereact/toast'
 import { App as AntApp } from 'antd'
+import Auth from './components/auth/Auth'
 
 function App(): JSX.Element {
   // const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
@@ -18,9 +19,9 @@ function App(): JSX.Element {
     <>
       <ConfigProvider
         theme={{
-          algorithm: theme.defaultAlgorithm,
+          algorithm: theme.darkAlgorithm,
           token: {
-            colorPrimary: '#2d499a'
+            colorPrimary: '#3b4252'
           },
           cssVar: true
         }}
@@ -28,6 +29,7 @@ function App(): JSX.Element {
         <AntApp>
           <Router>
             <Routes>
+              <Route path="/login" element={<Auth />} />
               <Route path="/" element={<Layout />} />
             </Routes>
           </Router>

@@ -1,10 +1,12 @@
 import '@renderer/assets/request-form.css'
+import AceEditor from 'react-ace'
+
+import 'ace-builds/src-noconflict/theme-twilight'
 
 import { Api } from '@renderer/app/interfaces/models'
 import store from '@renderer/app/store'
 import { updateApi } from '@renderer/app/store/mock/tabSlice'
 import { Radio, Select } from 'antd'
-import AceEditor from 'react-ace'
 
 import useDebounce from '@renderer/hooks/useDebounce'
 import { useEffect, useState } from 'react'
@@ -38,7 +40,8 @@ const RequestBodyForm = (props: { api: Api }) => {
   }
 
   const handleLanguageChange = (value: string) => {
-    const api: Api = JSON.parse(JSON.stringify(props.api))
+    const api: any = JSON.parse(JSON.stringify(props.api))
+
     if (!api.request.body)
       api.request.body = {
         mode: 'raw'
@@ -48,6 +51,14 @@ const RequestBodyForm = (props: { api: Api }) => {
         language: value
       }
     }
+
+    api.request.header = api.request.header.map((header: any) => {
+      if (header.key === 'Content-Type') {
+        header.value = value === 'xml' ? 'application/xml' : 'application/json'
+      }
+      return header
+    })
+
     api.modified = !_.isEqual(api, _api)
     store.dispatch(updateApi(api))
   }
@@ -76,7 +87,9 @@ const RequestBodyForm = (props: { api: Api }) => {
           onChange={(e) => handleModeChange(e)}
         >
           <Radio value={'none'}>none</Radio>
-          <Radio value={'form-data'}>form-data</Radio>
+          <Radio disabled value={'form-data'}>
+            form-data
+          </Radio>
           <Radio value={'raw'}>raw</Radio>
         </Radio.Group>
         {props.api.request.body?.mode === 'raw' && (
@@ -95,7 +108,7 @@ const RequestBodyForm = (props: { api: Api }) => {
         {props.api.request.body?.mode === 'raw' && (
           <AceEditor
             mode={props.api.request.body?.options?.raw.language}
-            theme="github"
+            theme="twilight"
             onChange={(value) => setRequestBody(value)}
             fontSize={12}
             name="request_code_editor"

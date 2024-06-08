@@ -1,8 +1,7 @@
-import { Api, Collection } from 'db/models';
-import { Request, Response } from 'express';
-import _ from 'lodash';
-
-var parser = require('xml2json');
+import { Api, Collection } from "db/models";
+import { Request, Response } from "express";
+import { XMLParser, XMLValidator } from "fast-xml-parser";
+import _ from "lodash";
 
 export const handleMockRequest = async (req: Request, res: Response) => {
   try {
@@ -13,7 +12,7 @@ export const handleMockRequest = async (req: Request, res: Response) => {
     const collection = await Collection.findById(collection_id);
 
     if (!collection) {
-      return res.status(404).json({ message: 'Invalid Mock Server URL' });
+      return res.status(404).json({ message: "Invalid Mock Server URL" });
     }
 
     const apis = await Api.find({ collection_id });
@@ -21,12 +20,23 @@ export const handleMockRequest = async (req: Request, res: Response) => {
     for (const api of apis) {
       const response = validateApi(api, req);
       if (response) {
-        return res.status(response.code || 200).json(response.body);
+        const contentType =
+          response.header.find(
+            (header: any) => header.key.toLowerCase() === "content-type"
+          )?.value || "application/json";
+        res.set("content-type", contentType);
+        return res
+          .status(response.code || 200)
+          .json(
+            contentType === "application/json"
+              ? JSON.parse(response.body)
+              : response.body
+          );
       }
     }
 
     return res.status(600).json({
-      message: 'No mock example found with the given parameters',
+      message: "No mock example found with the given parameters",
       code: 600,
     });
   } catch (error) {
@@ -40,12 +50,11 @@ export const handleMockRequest = async (req: Request, res: Response) => {
 const validateApi = (api: any, req: Request): any => {
   try {
     for (const response of api.response) {
-      console.log(response);
       const apiUrl = new URL(response.originalRequest.url.raw);
       const payload = {
         path: apiUrl.pathname,
-        headers: response.header,
-        body: response.body,
+        header: response.header,
+        body: response.originalRequest.body.raw,
         method: response.originalRequest.method,
       };
 
@@ -53,39 +62,58 @@ const validateApi = (api: any, req: Request): any => {
         continue;
       }
 
-      const path = req.originalUrl.split('?')[0];
+      const path = req.originalUrl.split("?")[0];
 
       if (path !== payload.path) {
         continue;
       }
 
-      const apiQuery = response.originalRequest.url.raw?.split('?', 2)[1];
+      const apiQuery = response.originalRequest.url.raw?.split("?", 2)[1];
       let apiQueryObject = {};
 
       if (apiQuery) {
         apiQueryObject = Object.fromEntries(
-          apiQuery.split('&').map((query: any) => query.split('='))
+          apiQuery.split("&").map((query: any) => query.split("="))
         );
       }
 
-      if (!_.isEqual(apiQueryObject, req.query)) {
+      if (
+        !_.isEqual(
+          convertKeysToLowerCase(apiQueryObject),
+          convertKeysToLowerCase(req.query)
+        )
+      ) {
         continue;
       }
 
-      if (req.method === 'POST' || req.method === 'PUT') {
-        if (req.headers['content-type'].includes('application/json')) {
+      if (req.method === "POST" || req.method === "PUT") {
+        if (req.headers["content-type"].includes("application/json")) {
           try {
-            if (!_.isEqual(req.body, JSON.parse(payload.body))) {
+            if (
+              !_.isEqual(
+                convertKeysToLowerCase(req.body),
+                convertKeysToLowerCase(JSON.parse(payload.body))
+              )
+            ) {
               continue;
             }
           } catch (error) {
             console.log(error);
             continue;
           }
-        } else if (req.headers['content-type'].includes('application/xml')) {
+        } else if (req.headers["content-type"].includes("application/xml")) {
           try {
             if (
-              !_.isEqual(parser.toJson(req.body), parser.toJson(payload.body))
+              payload.body.length &&
+              !(XMLValidator.validate(payload.body) === true)
+            ) {
+              continue;
+            }
+            if (
+              !_.isEqual(
+                convertKeysToLowerCase(req.body),
+                convertKeysToLowerCase(new XMLParser().parse(payload.body))
+              )
             ) {
               continue;
             }
@@ -109,3 +137,14 @@ const validateApi = (api: any, req: Request): any => {
     return null;
   }
 };
+
+function convertKeysToLowerCase(obj: any) {
+  return _.reduce(
+    obj,
+    (result: any, value, key: any) => {
+      result[key?.toLowerCase()] = value;
+      return result;
+    },
+    {}
+  );
+}

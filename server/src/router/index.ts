@@ -1,11 +1,11 @@
-import express from 'express';
-import mockRoute from './routes/mock.route';
-import publicRoute from './routes/public.route';
-
-const router = express.Router();
+import express from "express";
+import publicRoute from "./routes/public.route";
+import { mockRoute } from "./routes/mock.route";
 
 export default (): express.Router => {
-  mockRoute(router);
+  const router = express.Router();
+
+  router.use("/app", mockRoute());
   publicRoute(router);
 
   return router;

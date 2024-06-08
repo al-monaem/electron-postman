@@ -36,6 +36,34 @@ const RequestHeaderForm = (props: { api: Api }) => {
 
     const api: Api = JSON.parse(JSON.stringify(props.api))
     api.request.header = newHeaders.filter((headers: any) => !headers.default)
+
+    if (newHeaders[index].key?.toLowerCase() === 'content-type') {
+      if (
+        newHeaders[index].value?.toLowerCase() !== 'application/json' &&
+        newHeaders[index].value?.toLowerCase() !== 'application/xml'
+      ) {
+        if (!api.request.body) api.request.body = { mode: 'none' }
+        api.request.body.mode = 'none'
+      } else {
+        if (!api.request.body) api.request.body = { mode: 'raw' }
+        if (newHeaders[index].value?.toLowerCase() === 'application/json') {
+          api.request.body.mode = 'raw'
+          api.request.body.options = {
+            raw: {
+              language: 'json'
+            }
+          }
+        } else {
+          api.request.body.mode = 'raw'
+          api.request.body.options = {
+            raw: {
+              language: 'xml'
+            }
+          }
+        }
+      }
+    }
+
     store.dispatch(updateApi(api))
   }
 

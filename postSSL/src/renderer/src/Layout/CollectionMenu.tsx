@@ -11,6 +11,12 @@ import { theme } from 'antd'
 import { FaFolderOpen } from 'react-icons/fa'
 import { TbApi } from 'react-icons/tb'
 import { MdDelete } from 'react-icons/md'
+import {
+  deleteCollection,
+  deleteExample,
+  deleteFolder,
+  deleteRequest
+} from '@renderer/controllers/api.controller'
 
 const CollectionMenu = () => {
   const collections = useSelector((state: any) => state.userReducer.collections)
@@ -23,6 +29,22 @@ const CollectionMenu = () => {
     type: ''
   })
   const [contextMenuItem, setContextMenuItems] = useState<any>([])
+
+  const handleExampleDelete = async (api_id: string, example_id: string) => {
+    await deleteExample(api_id, example_id)
+  }
+
+  const handleRequestDelete = async (api_id: string) => {
+    await deleteRequest(api_id)
+  }
+
+  const handleFolderDelete = async (folder_id: string) => {
+    await deleteFolder(folder_id)
+  }
+
+  const handleCollectionDelete = async (collection_id: string) => {
+    await deleteCollection(collection_id)
+  }
 
   const onSelect = (e: any) => {
     const payload: any = {
@@ -70,7 +92,29 @@ const CollectionMenu = () => {
           ..._item,
           item: []
         },
-        icon: _item.item ? <FaFolderOpen className="mr-2" /> : <TbApi className="mr-2" />,
+        icon: _item.item ? (
+          <FaFolderOpen className="mr-2 w-3 h-3" />
+        ) : (
+          <span
+            style={{
+              fontSize: '10px',
+              marginRight: '8px'
+            }}
+            className={`${
+              _item.request?.method === 'GET'
+                ? 'text-green-600'
+                : _item.request?.method === 'POST'
+                  ? 'text-yellow-600'
+                  : _item.request?.method === 'PUT'
+                    ? 'text-blue-400'
+                    : _item.request?.method === 'PATCH'
+                      ? 'text-orange-400'
+                      : 'text-red-600'
+            } font-semibold`}
+          >
+            {_item.request?.method || 'GET'}
+          </span>
+        ),
         className: 'p-0'
       }
 
@@ -81,14 +125,34 @@ const CollectionMenu = () => {
             ...data,
             ..._item,
             key: example._id,
-            label: example.name,
+            label: (
+              <div
+                onContextMenu={(event: any) => {
+                  onRightClick(event, {
+                    ..._item,
+                    item: [],
+                    collection_id: collection._id,
+                    type: TabTypes.API_RESPONSE,
+                    data: {
+                      ...data.data,
+                      ...example,
+                      _id: _item._id,
+                      active_example_id: example._id
+                    }
+                  })
+                }}
+              >
+                {example.name}
+              </div>
+            ),
             type: TabTypes.API_RESPONSE,
             data: {
               ...data.data,
               ...example,
               _id: _item._id,
               active_example_id: example._id
-            }
+            },
+            icon: <TbApi className="w-3 h-3 mr-2" />
           })
         })
 
@@ -109,7 +173,7 @@ const CollectionMenu = () => {
           return [
             {
               label: 'Create New Folder',
-              icon: <FaFolderOpen className="w-4 h-4 mr-2" />,
+              icon: <FaFolderOpen className="w-3 h-3 mr-2" />,
               command: () => {
                 const payload: any = {
                   type: TabTypes.CREATE_FOLDER,
@@ -120,7 +184,7 @@ const CollectionMenu = () => {
             },
             {
               label: 'Create New Api',
-              icon: <TbApi className="w-4 h-4 mr-2" />,
+              icon: <TbApi className="w-3 h-3 mr-2" />,
               command: () => {
                 const payload: any = {
                   type: TabTypes.CREATE_API,
@@ -132,7 +196,8 @@ const CollectionMenu = () => {
             },
             {
               label: 'Delete Collection',
-              icon: <MdDelete className="w-4 h-4 mr-2" />
+              icon: <MdDelete className="w-3 h-3 mr-2" />,
+              command: () => handleCollectionDelete(data._id)
             }
           ]
         }
@@ -140,7 +205,7 @@ const CollectionMenu = () => {
           return [
             {
               label: 'Create New Api',
-              icon: <TbApi className="w-4 h-4 mr-2" />,
+              icon: <TbApi className="w-3 h-3 mr-2" />,
               command: () => {
                 const payload: any = {
                   type: TabTypes.CREATE_API,
@@ -153,7 +218,10 @@ const CollectionMenu = () => {
             },
             {
               label: 'Delete Folder',
-              icon: <MdDelete className="w-4 h-4 mr-2" />
+              icon: <MdDelete className="w-3 h-3 mr-2" />,
+              command: () => {
+                handleFolderDelete(data._id)
+              }
             }
           ]
         }
@@ -161,7 +229,7 @@ const CollectionMenu = () => {
           return [
             {
               label: 'Create New Example',
-              icon: <TbApi className="w-4 h-4 mr-2" />,
+              icon: <TbApi className="w-3 h-3 mr-2" />,
               command: () => {
                 const api = apis.find((api: any) => api._id === data._id) || []
                 let sameNameCount = 0
@@ -195,8 +263,22 @@ const CollectionMenu = () => {
               }
             },
             {
-              label: 'Delete Folder',
-              icon: <MdDelete className="w-4 h-4 mr-2" />
+              label: 'Delete Request',
+              icon: <MdDelete className="w-3 h-3 mr-2" />,
+              command: () => {
+                handleRequestDelete(data._id)
+              }
+            }
+          ]
+        }
+        if (data.type === TabTypes.API_RESPONSE) {
+          return [
+            {
+              label: 'Delete Example',
+              icon: <MdDelete className="w-3 h-3 mr-2" />,
+              command: () => {
+                handleExampleDelete(data._id, data.data.active_example_id)
+              }
             }
           ]
         }
@@ -217,7 +299,7 @@ const CollectionMenu = () => {
         <Tree
           selectionMode="single"
           selectionKeys={selectedKey.key}
-          className="p-0 text-sm"
+          className="p-0 text-sm !border-none"
           onNodeClick={onSelect}
           value={collections.map((collection: Collection) => {
             const treeNode: any = {
@@ -225,10 +307,7 @@ const CollectionMenu = () => {
               leaf: collection.item?.length ? false : true,
               label: (
                 <div
-                  className="w-full"
-                  style={{
-                    fontFamily: 'var(--ant-font-family)'
-                  }}
+                  className="w-full flex items-center justify-between more"
                   onContextMenu={(event: any) => {
                     onRightClick(event, {
                       ...collection,
@@ -238,7 +317,32 @@ const CollectionMenu = () => {
                     })
                   }}
                 >
-                  {collection.name}
+                  <div>{collection.name}</div>
+                  {/* <div
+                    className="threedot mr-1"
+                    style={{
+                      visibility: 'hidden'
+                    }}
+                  >
+                    <Dropdown
+                      menu={{
+                        items: [
+                          {
+                            key: 'Create_Folder',
+                            label: <div className="text-xs">Create Folder</div>
+                          }
+                        ]
+                      }}
+                      placement="bottomRight"
+                      trigger={['click']}
+                    >
+                      <Button
+                        type="text"
+                        size="small"
+                        icon={<BsThreeDots className="w-3 h-3" />}
+                      ></Button>
+                    </Dropdown>
+                  </div> */}
                 </div>
               ),
               children: getChildren(collection.item, collection),
@@ -247,7 +351,7 @@ const CollectionMenu = () => {
                 ...collection,
                 item: []
               },
-              icon: <BsCollectionFill className="mr-2" />,
+              icon: <BsCollectionFill className="mr-2 w-3 h-3" />,
               className: 'p-0'
             }
 

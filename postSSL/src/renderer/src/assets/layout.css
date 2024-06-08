@@ -2,6 +2,56 @@
   margin: 0px !important;
 }
 
+.p-tree-toggler > svg {
+  color: white !important;
+}
+
 .p-treenode-label {
   width: 100%;
+  font-size: 12px;
+}
+
+.p-tree-container {
+  background-color: var(--ant-color-bg-elevated);
+  color: var(--ant-color-text);
+}
+
+.p-treenode-content {
+  padding: 0px;
+  background-color: var(--ant-color-bg);
+}
+
+.p-treenode-content:hover {
+  background-color: var(--ant-color-bg-container);
+  color: white;
+}
+.p-highlight {
+  background-color: var(--ant-color-bg-container);
+}
+
+.more:hover .threedot {
+  visibility: visible !important;
+}
+
+input[type='text']:hover {
+  background-color: var(--ant-color-bg-elevated);
+}
+
+input[type='text']:focus {
+  background-color: var(--ant-color-bg-elevated);
+}
+
+.p-contextmenu {
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    'Open Sans',
+    'Helvetica Neue',
+    sans-serif !important;
 }

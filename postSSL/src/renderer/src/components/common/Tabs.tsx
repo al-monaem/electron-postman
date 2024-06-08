@@ -42,9 +42,17 @@ const Tabs = () => {
             tab.type === TabTypes.CREATE_API || tab.type === TabTypes.API ? (
               <span className="flex justify-between items-center w-[120px]">
                 <span
-                  className={`${tab.modified ? 'w-[80%]' : ''} text-ellipsis whitespace-nowrap overflow-hidden`}
+                  className={`${tab.modified ? 'w-[80%]' : ''} text-ellipsis whitespace-nowrap overflow-hidden flex items-center space-x-2`}
                 >
-                  {tab.name}
+                  <span
+                    style={{
+                      fontSize: '10px'
+                    }}
+                    className={`font-semibold ${tab.request?.method === 'GET' ? 'text-green-600' : tab.request?.method === 'POST' ? 'text-yellow-600' : tab.request?.method === 'PUT' ? 'text-blue-400' : tab.request?.method === 'PATCH' ? 'text-orange-400' : 'text-red-600'}`}
+                  >
+                    {tab.request?.method || 'GET'}
+                  </span>
+                  <span>{tab.name}</span>
                 </span>
                 {tab.modified && <div className="bg-red-500 w-2 h-2 rounded-full"></div>}
               </span>

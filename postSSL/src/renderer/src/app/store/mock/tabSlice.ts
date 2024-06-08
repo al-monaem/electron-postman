@@ -56,7 +56,7 @@ const tabSlice = createSlice({
               type: TabTypes.CREATE_API,
               collection_id: action.payload.collection_id,
               folder_id: action.payload.folder_id,
-              modified: false,
+              modified: true,
               request: {
                 method: 'GET',
                 header: [],
@@ -78,8 +78,7 @@ const tabSlice = createSlice({
                 body: '',
                 name: '',
                 header: []
-              },
-              active_example_id: example_id
+              }
             }
 
             state.tabs.push(api)
@@ -237,7 +236,9 @@ const tabSlice = createSlice({
           (tab: Api) => tab.active_example_id === action.payload.active_example_id
         )
       } else {
-        tabIndex = state.tabs.findIndex((tab: Api) => tab._id === action.payload._id)
+        tabIndex = state.tabs.findIndex(
+          (tab: Api) => tab._id === action.payload._id && !tab.active_example_id
+        )
       }
 
       if (tabIndex !== -1) {
@@ -283,6 +284,9 @@ const tabSlice = createSlice({
     },
     removeActiveTab: (state) => {
       state.tabs.splice(state.activeTab, 1)
+    },
+    updateTabs: (state, action) => {
+      state.tabs = action.payload
     }
   }
 })
@@ -297,7 +301,8 @@ export const {
   updateBasics,
   updateTabId,
   refreshTabs,
-  removeActiveTab
+  removeActiveTab,
+  updateTabs
 } = tabSlice.actions
 
 export default tabSlice.reducer

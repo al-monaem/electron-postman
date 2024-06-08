@@ -1,27 +1,38 @@
 import {
   createApi,
   createExample,
+  deleteExample,
+  deleteRequest,
   updateApi,
   updateExample,
-} from '@controllers/api.controller';
-import { createFolder } from '@controllers/folder.controller';
+} from "@controllers/api.controller";
+import { createFolder, deleteFolder } from "@controllers/folder.controller";
 import {
   createCollection,
+  deleteCollection,
   getCollections,
-} from 'controllers/collection.controller';
-import express from 'express';
+} from "controllers/collection.controller";
+import express from "express";
+import { verifyJWT } from "middleware/auth.middleware";
 
-export default (router: express.Router): express.Router => {
-  router.route('/app/collection').post(createCollection);
-  router.route('/app/collections').get(getCollections);
+export const mockRoute = (): express.Router => {
+  const router = express.Router();
+  router.use(verifyJWT);
 
-  router.route('/app/folder').post(createFolder);
+  router.route("/collection").post(createCollection);
+  router.route("/collections").get(getCollections);
+  router.route("/collection/:collection_id").delete(deleteCollection);
 
-  router.route('/app/api').post(createApi);
-  router.route('/app/api').put(updateApi);
+  router.route("/folder").post(createFolder);
+  router.route("/folder/:folder_id").delete(deleteFolder);
 
-  router.route('/app/api/example').post(createExample);
-  router.route('/app/api/example').put(updateExample);
+  router.route("/api").post(createApi);
+  router.route("/api").put(updateApi);
+  router.route("/api/:api_id").delete(deleteRequest);
+
+  router.route("/api/example").post(createExample);
+  router.route("/api/example").put(updateExample);
+  router.route("/api/example/:api_id/:example_id").delete(deleteExample);
 
   return router;
 };

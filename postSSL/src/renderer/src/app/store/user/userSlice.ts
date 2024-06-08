@@ -3,7 +3,10 @@ import { createSlice } from '@reduxjs/toolkit'
 const initialState: any = {
   collections: [],
   folders: [],
-  apis: []
+  apis: [],
+  user: null,
+  accessToken: '',
+  refreshToken: ''
 }
 
 const userSlice = createSlice({
@@ -17,10 +20,21 @@ const userSlice = createSlice({
     },
     clearCollections: (state) => {
       state.collections = initialState.collections
+    },
+    setUser: (state, action) => {
+      const { user, accessToken, refreshToken } = action.payload
+      state.user = user
+      state.accessToken = accessToken
+      state.refreshToken = refreshToken
+    },
+    clearUser: (state) => {
+      state.user = initialState.user
+      state.accessToken = initialState.accessToken
+      state.refreshToken = initialState.refreshToken
     }
   }
 })
 
-export const { clearCollections, setCollections } = userSlice.actions
+export const { clearCollections, setCollections, setUser, clearUser } = userSlice.actions
 
 export default userSlice.reducer

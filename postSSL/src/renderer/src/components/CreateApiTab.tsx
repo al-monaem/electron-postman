@@ -9,6 +9,7 @@ import ResponseBodyForm from './ResponseBodyForm'
 import { TabTypes } from '@renderer/utilities/TabTypes'
 import { sendMockRequest } from '@renderer/controllers/api.controller'
 import _ from 'lodash'
+import { useState } from 'react'
 
 const requestOptions = [
   {
@@ -25,7 +26,7 @@ const requestOptions = [
   },
   {
     value: 'PATCH',
-    label: <span className="text-orange-40000 font-semibold">PATCH</span>
+    label: <span className="text-orange-400 font-semibold">PATCH</span>
   },
   {
     value: 'DELETE',
@@ -34,9 +35,10 @@ const requestOptions = [
 ]
 
 const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) => {
-  const _api = JSON.parse(JSON.stringify(props.api))
+  const [_api] = useState(JSON.parse(JSON.stringify(props.api)))
 
   const { token } = theme.useToken()
+  const [sendingRequest, setSendingRequest] = useState(false)
 
   const handleUrlChange = (e: any) => {
     const api: Api = JSON.parse(JSON.stringify(props.api))
@@ -83,8 +85,14 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
   }
 
   const handleStatusCodeChange = (e: any) => {
-    const api: Api = JSON.parse(JSON.stringify(props.api))
-    api.defaultStatusCode = e.target.value
+    const api: any = JSON.parse(JSON.stringify(props.api))
+    api.response.code = e.target.value
+
+    // if(!_.isEqual(api, _api)) api.modified = true
+    // else api.modified = false
+
+    api.modified = true
+
     store.dispatch(updateApi(api))
   }
 
@@ -102,6 +110,7 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
   }
 
   const handleSendRequest = async () => {
+    setSendingRequest(true)
     const api: any = JSON.parse(JSON.stringify(props.api))
 
     const headers = api.request.header.reduce((acc: any, header: any) => {
@@ -162,6 +171,7 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
     }
 
     store.dispatch(updateApi(api))
+    setSendingRequest(false)
   }
 
   return (
@@ -214,6 +224,7 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
               size="large"
               type="primary"
               className="!font-semibold"
+              loading={sendingRequest}
             >
               Send
             </Button>
