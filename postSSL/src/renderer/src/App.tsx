@@ -1,4 +1,4 @@
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom'
+import { Route, HashRouter as Router, Routes } from 'react-router-dom'
 import { Layout } from './Layout'
 import { ConfigProvider, theme } from 'antd'
 import { useLayoutEffect, useRef } from 'react'
