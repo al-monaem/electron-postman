@@ -21,6 +21,8 @@ import {
 const CollectionMenu = () => {
   const collections = useSelector((state: any) => state.userReducer.collections)
   const apis = useSelector((state: any) => state.userReducer.apis)
+  const activeTheme = useSelector((state: any) => state.settingsReducer.activeTheme)
+
   const contextMenu: any = useRef()
   const { token } = theme.useToken()
 
@@ -301,6 +303,9 @@ const CollectionMenu = () => {
           selectionKeys={selectedKey.key}
           className="p-0 text-sm !border-none"
           onNodeClick={onSelect}
+          style={{
+            backgroundColor: activeTheme === 'dark' ? token.colorBgElevated : token.colorBgLayout
+          }}
           value={collections.map((collection: Collection) => {
             const treeNode: any = {
               key: collection._id,

@@ -1,7 +1,9 @@
-import { Api, Collection } from "db/models";
-import { Request, Response } from "express";
-import { XMLParser, XMLValidator } from "fast-xml-parser";
-import _ from "lodash";
+import { Api, Collection } from 'db/models';
+import { Request, Response } from 'express';
+import { XMLParser, XMLValidator } from 'fast-xml-parser';
+import _ from 'lodash';
+
+type GenericObject = { [key: string]: any };
 
 export const handleMockRequest = async (req: Request, res: Response) => {
   try {
@@ -12,7 +14,7 @@ export const handleMockRequest = async (req: Request, res: Response) => {
     const collection = await Collection.findById(collection_id);
 
     if (!collection) {
-      return res.status(404).json({ message: "Invalid Mock Server URL" });
+      return res.status(404).json({ message: 'Invalid Mock Server URL' });
     }
 
     const apis = await Api.find({ collection_id });
@@ -22,13 +24,31 @@ export const handleMockRequest = async (req: Request, res: Response) => {
       if (response) {
         const contentType =
           response.header.find(
-            (header: any) => header.key.toLowerCase() === "content-type"
-          )?.value || "application/json";
-        res.set("content-type", contentType);
+            (header: any) => header.key.toLowerCase() === 'content-type'
+          )?.value || 'application/json';
+        res.set('content-type', contentType);
         return res
           .status(response.code || 200)
           .json(
-            contentType === "application/json"
+            contentType === 'application/json'
+              ? JSON.parse(response.body)
+              : response.body
+          );
+      }
+    }
+
+    for (const api of apis) {
+      const response = validateApiWithKeyOnly(api, req);
+      if (response) {
+        const contentType =
+          response.header.find(
+            (header: any) => header.key.toLowerCase() === 'content-type'
+          )?.value || 'application/json';
+        res.set('content-type', contentType);
+        return res
+          .status(response.code || 200)
+          .json(
+            contentType === 'application/json'
               ? JSON.parse(response.body)
               : response.body
           );
@@ -36,7 +56,7 @@ export const handleMockRequest = async (req: Request, res: Response) => {
     }
 
     return res.status(600).json({
-      message: "No mock example found with the given parameters",
+      message: 'No mock example found with the given parameters',
       code: 600,
     });
   } catch (error) {
@@ -62,18 +82,18 @@ const validateApi = (api: any, req: Request): any => {
         continue;
       }
 
-      const path = req.originalUrl.split("?")[0];
+      const path = req.originalUrl.split('?')[0];
 
       if (path !== payload.path) {
         continue;
       }
 
-      const apiQuery = response.originalRequest.url.raw?.split("?", 2)[1];
+      const apiQuery = response.originalRequest.url.raw?.split('?', 2)[1];
       let apiQueryObject = {};
 
       if (apiQuery) {
         apiQueryObject = Object.fromEntries(
-          apiQuery.split("&").map((query: any) => query.split("="))
+          apiQuery.split('&').map((query: any) => query.split('='))
         );
       }
 
@@ -86,8 +106,8 @@ const validateApi = (api: any, req: Request): any => {
         continue;
       }
 
-      if (req.method === "POST" || req.method === "PUT") {
-        if (req.headers["content-type"].includes("application/json")) {
+      if (req.method === 'POST' || req.method === 'PUT') {
+        if (req.headers['content-type'].includes('application/json')) {
           try {
             if (
               !_.isEqual(
@@ -101,7 +121,98 @@ const validateApi = (api: any, req: Request): any => {
             console.log(error);
             continue;
           }
-        } else if (req.headers["content-type"].includes("application/xml")) {
+        } else if (req.headers['content-type'].includes('application/xml')) {
+          try {
+            if (
+              payload.body.length &&
+              !(XMLValidator.validate(payload.body) === true)
+            ) {
+              continue;
+            }
+            if (
+              !_.isEqual(
+                convertKeysToLowerCase(req.body),
+                convertKeysToLowerCase(new XMLParser().parse(payload.body))
+              )
+            ) {
+              continue;
+            }
+          } catch (error) {
+            console.log(error);
+            continue;
+          }
+        } else {
+          if (req.body !== payload.body) {
+            continue;
+          }
+        }
+      }
+
+      return response;
+    }
+
+    return null;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+const validateApiWithKeyOnly = (api: any, req: Request): any => {
+  try {
+    for (const response of api.response) {
+      const apiUrl = new URL(response.originalRequest.url.raw);
+      const payload = {
+        path: apiUrl.pathname,
+        header: response.header,
+        body: response.originalRequest.body.raw,
+        method: response.originalRequest.method,
+      };
+
+      if (payload.method !== req.method) {
+        continue;
+      }
+
+      const path = req.originalUrl.split('?')[0];
+
+      if (path !== payload.path) {
+        continue;
+      }
+
+      const apiQuery = response.originalRequest.url.raw?.split('?', 2)[1];
+      let apiQueryObject = {};
+
+      if (apiQuery) {
+        apiQueryObject = Object.fromEntries(
+          apiQuery.split('&').map((query: any) => query.split('='))
+        );
+      }
+
+      if (
+        !_.isEqual(
+          Object.keys(convertKeysToLowerCase(apiQueryObject)),
+          Object.keys(convertKeysToLowerCase(req.query))
+        )
+      ) {
+        continue;
+      }
+
+      if (req.method === 'POST' || req.method === 'PUT') {
+        if (req.headers['content-type'].includes('application/json')) {
+          try {
+            if (
+              !haveSameKeys(
+                convertKeysToLowerCase(req.body),
+                convertKeysToLowerCase(JSON.parse(payload.body))
+              )
+            ) {
+              continue;
+            }
+          } catch (error) {
+            console.log(error);
+            continue;
+          }
+        } else if (req.headers['content-type'].includes('application/xml')) {
           try {
             if (
               payload.body.length &&
@@ -147,4 +258,29 @@ function convertKeysToLowerCase(obj: any) {
     },
     {}
   );
+}
+
+function haveSameKeys(object1: GenericObject, object2: GenericObject) {
+  // Check if both are objects
+  if (_.isObject(object1) && _.isObject(object2)) {
+    // Get the keys of both objects
+    const keys1 = _.keys(object1);
+    const keys2 = _.keys(object2);
+
+    // Compare keys
+    if (!_.isEqual(keys1, keys2)) {
+      return false;
+    }
+
+    // Recursively check nested objects
+    for (const key of keys1) {
+      if (!haveSameKeys(object1[key], object2[key])) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  return true;
 }

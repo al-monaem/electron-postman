@@ -1,7 +1,7 @@
 import { TabTypes } from '@renderer/utilities/TabTypes'
 import { useSelector } from 'react-redux'
 import CreateCollectionTab from '../CreateCollectionTab'
-import { Tabs as AntTabs } from 'antd'
+import { Tabs as AntTabs, theme } from 'antd'
 import store from '@renderer/app/store'
 import { removeFromTab, switchTab } from '@renderer/app/store/mock/tabSlice'
 import CreateFolderTab from '../CreateFolderTab'
@@ -11,6 +11,7 @@ import BreadCrumb from './BreadCrumb'
 const Tabs = () => {
   const tabs = useSelector((state: any) => state.tabReducer.tabs)
   const activeTab = useSelector((state: any) => state.tabReducer.activeTab)
+  const { token } = theme.useToken()
 
   const onEdit = (key: any, action: 'add' | 'remove') => {
     if (action === 'remove') {
@@ -36,6 +37,9 @@ const Tabs = () => {
       onChange={onChange}
       type="editable-card"
       activeKey={activeTab}
+      style={{
+        backgroundColor: token.colorBgBase
+      }}
       items={(tabs || []).map((tab: any, index: any) => {
         return {
           label:

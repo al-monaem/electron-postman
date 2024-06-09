@@ -1,0 +1,30 @@
+version: '3'
+services:
+  server:
+    image: server
+    networks:
+      - mime_api
+    ports:
+      - '3001:80'
+    env_file:
+      - ./.env
+    depends_on:
+      - mongo
+    mem_limit: 512M
+
+  mongo:
+    image: mongo
+    ports:
+      - '27017:27017'
+    networks:
+      - mime_api
+    volumes:
+      - mongodb-data:/data/db
+    mem_limit: 512M
+
+networks:
+  mime_api:
+    driver: bridge
+
+volumes:
+  mongodb-data:

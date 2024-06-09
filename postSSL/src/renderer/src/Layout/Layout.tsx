@@ -26,6 +26,7 @@ export const Layout = () => {
   const folders = useSelector((state: any) => state.userReducer.folders)
   const apis = useSelector((state: any) => state.userReducer.apis)
   const accessToken = useSelector((state: any) => state.userReducer.accessToken)
+  const activeTheme = useSelector((state: any) => state.settingsReducer.activeTheme)
 
   function fallbackRender({ error, resetErrorBoundary }) {
     store.dispatch(clearTabs())
@@ -106,8 +107,8 @@ export const Layout = () => {
         id="topbar"
         style={{
           borderBottom: '1px solid',
-          borderColor: token.colorBorderSecondary,
-          backgroundColor: token.colorBgElevated
+          borderColor: activeTheme === 'dark' ? token.colorBorderSecondary : token.colorBorder,
+          backgroundColor: activeTheme === 'dark' ? token.colorBgElevated : token.colorBgLayout
         }}
         className="flex w-full"
       >
@@ -117,7 +118,9 @@ export const Layout = () => {
         <div
           ref={collection_menu_ref}
           style={{
-            backgroundColor: token.colorBgElevated
+            backgroundColor: activeTheme === 'dark' ? token.colorBgElevated : token.colorBgLayout,
+            borderRight: '1px solid',
+            borderColor: activeTheme === 'dark' ? token.colorBorderSecondary : token.colorBorder
           }}
           className="h-full"
         >
@@ -133,23 +136,18 @@ export const Layout = () => {
             <div
               style={{
                 borderBottom: '1px solid',
-                borderColor: token.colorBorderSecondary
+                borderColor: activeTheme === 'dark' ? token.colorBorderSecondary : token.colorBorder
               }}
               className="h-[5vh] flex items-center"
             >
               <CreateCollection />
             </div>
-            <div
-              style={{
-                borderRight: '1px solid',
-                borderColor: token.colorBorderSecondary
-              }}
-              className="flex flex-grow"
-            >
+            <div className="flex flex-grow">
               <div
                 style={{
                   borderRight: '1px solid',
-                  borderColor: token.colorBorderSecondary
+                  borderColor:
+                    activeTheme === 'dark' ? token.colorBorderSecondary : token.colorBorder
                 }}
                 className="w-[80px]"
               ></div>

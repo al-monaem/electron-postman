@@ -2,6 +2,7 @@ import '@renderer/assets/request-form.css'
 import AceEditor from 'react-ace'
 
 import 'ace-builds/src-noconflict/theme-twilight'
+import 'ace-builds/src-noconflict/theme-github'
 
 import { Api } from '@renderer/app/interfaces/models'
 import store from '@renderer/app/store'
@@ -12,14 +13,14 @@ import useDebounce from '@renderer/hooks/useDebounce'
 import { useEffect, useState } from 'react'
 
 import * as _ from 'lodash'
+import { useSelector } from 'react-redux'
 
 const { Option } = Select
 
 const RequestBodyForm = (props: { api: Api }) => {
   const [requestBody, setRequestBody] = useState(props.api.request.body?.raw || '')
   const requestBodyDebouncedValue = useDebounce(requestBody, 1000)
-
-  const _api = JSON.parse(JSON.stringify(props.api))
+  const activeTheme = useSelector((state: any) => state.settingsReducer.activeTheme)
 
   const handleModeChange = (e: any) => {
     const api: Api = JSON.parse(JSON.stringify(props.api))
@@ -35,7 +36,8 @@ const RequestBodyForm = (props: { api: Api }) => {
           language: 'json'
         }
       }
-    api.modified = !_.isEqual(api, _api)
+    // api.modified = !_.isEqual(api, _api)
+    api.modified = true
     store.dispatch(updateApi(api))
   }
 
@@ -59,7 +61,8 @@ const RequestBodyForm = (props: { api: Api }) => {
       return header
     })
 
-    api.modified = !_.isEqual(api, _api)
+    // api.modified = !_.isEqual(api, _api)
+    api.modified = true
     store.dispatch(updateApi(api))
   }
 
@@ -73,7 +76,8 @@ const RequestBodyForm = (props: { api: Api }) => {
 
     api.request.body.raw = requestBodyDebouncedValue
 
-    api.modified = !_.isEqual(api, _api)
+    // api.modified = !_.isEqual(api, _api)
+    api.modified = true
 
     store.dispatch(updateApi(api))
   }, [requestBodyDebouncedValue])
@@ -108,7 +112,7 @@ const RequestBodyForm = (props: { api: Api }) => {
         {props.api.request.body?.mode === 'raw' && (
           <AceEditor
             mode={props.api.request.body?.options?.raw.language}
-            theme="twilight"
+            theme={activeTheme === 'dark' ? 'twilight' : 'github'}
             onChange={(value) => setRequestBody(value)}
             fontSize={12}
             name="request_code_editor"

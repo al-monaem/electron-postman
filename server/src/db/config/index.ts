@@ -1,10 +1,15 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const dbconnect = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      dbName: "post_ssl",
-    });
+    const conn = await mongoose.connect(
+      process.env.APP_ENV === 'production'
+        ? process.env.MONGODB_PROD_URI
+        : process.env.MONGODB_URI,
+      {
+        dbName: 'mime_api',
+      }
+    );
 
     console.log(`MongoDB connected: ${conn.connection.host}`);
   } catch (err) {

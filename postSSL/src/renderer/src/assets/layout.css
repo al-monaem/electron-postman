@@ -3,7 +3,7 @@
 }
 
 .p-tree-toggler > svg {
-  color: white !important;
+  color: var(--ant-color-text) !important;
 }
 
 .p-treenode-label {
@@ -12,7 +12,7 @@
 }
 
 .p-tree-container {
-  background-color: var(--ant-color-bg-elevated);
+  /* background-color: var(--ant-color-bg-elevated); */
   color: var(--ant-color-text);
 }
 
@@ -23,7 +23,7 @@
 
 .p-treenode-content:hover {
   background-color: var(--ant-color-bg-container);
-  color: white;
+  color: var(--ant-color-text);
 }
 .p-highlight {
   background-color: var(--ant-color-bg-container);

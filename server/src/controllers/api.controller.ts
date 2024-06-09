@@ -1,6 +1,6 @@
-import { Api, Collection, Folder } from "db/models";
-import { Request, Response } from "express";
-import { XMLValidator } from "fast-xml-parser";
+import { Api, Collection, Folder } from 'db/models';
+import { Request, Response } from 'express';
+import { XMLValidator } from 'fast-xml-parser';
 
 export const createApi = async (req: Request, res: Response) => {
   try {
@@ -15,12 +15,12 @@ export const createApi = async (req: Request, res: Response) => {
 
     const collection = await Collection.findById(collection_id);
 
-    if (!collection) throw new Error("Collection not found");
+    if (!collection) throw new Error('Collection not found');
 
     if (folder_id) {
       const folder = await Folder.findById(folder_id);
 
-      if (!folder) throw new Error("Folder not found");
+      if (!folder) throw new Error('Folder not found');
     }
 
     const existApi = await Api.findOne({
@@ -28,26 +28,26 @@ export const createApi = async (req: Request, res: Response) => {
       collection_id: collection._id,
     }).lean();
 
-    if (existApi) throw new Error("Duplicate API name under same collection");
+    if (existApi) throw new Error('Duplicate API name under same collection');
 
     const url = `${request.url?.raw}?${(request.url.query || [])
       .filter((query: any) => !query.disabled)
       .map((query: any) => `${query.key}=${query.value}`)
-      .join("&")}`;
+      .join('&')}`;
 
     const parsedURL: any = validateAPI(url, request, response);
 
-    let apiUrlRaw = request.url.raw.split("?", 2)[0];
+    let apiUrlRaw = request.url.raw.split('?', 2)[0];
     if (request.url.query?.length > 0) {
       apiUrlRaw = `${request.url.raw}?${(request.url.query || [])
         .filter((query: any) => !query.disabled)
         .map((query: any) => `${query.key}=${query.value}`)
-        .join("&")}`;
+        .join('&')}`;
     }
 
     const apiBody = {
       mode: request.body?.mode,
-      raw: request.body.raw || "",
+      raw: request.body.raw || '',
       options: request.body?.options,
     };
 
@@ -55,8 +55,8 @@ export const createApi = async (req: Request, res: Response) => {
       raw: apiUrlRaw,
       protocol: parsedURL.protocol,
       port: parsedURL.port,
-      host: parsedURL.hostname.split("."),
-      path: parsedURL.pathname.split("/"),
+      host: parsedURL.hostname.split('.'),
+      path: parsedURL.pathname.split('/'),
       query: request.url.query || [],
     };
 
@@ -65,14 +65,14 @@ export const createApi = async (req: Request, res: Response) => {
       url: apiUrl,
       header: [
         {
-          key: "Content-Type",
+          key: 'Content-Type',
           value:
-            request.mode === "raw" && request?.options?.raw?.language === "xml"
-              ? "application/xml"
-              : "application/json",
-          name: "Content-Type",
-          description: "",
-          type: "text",
+            request.mode === 'raw' && request?.options?.raw?.language === 'xml'
+              ? 'application/xml'
+              : 'application/json',
+          name: 'Content-Type',
+          description: '',
+          type: 'text',
         },
       ],
       body: apiBody,
@@ -84,15 +84,15 @@ export const createApi = async (req: Request, res: Response) => {
         originalRequest: apiRequest,
         header: [
           {
-            key: "Content-Type",
+            key: 'Content-Type',
             value:
-              request.mode === "raw" &&
-              request?.options?.raw?.language === "xml"
-                ? "application/xml"
-                : "application/json",
-            name: "Content-Type",
-            description: "",
-            type: "text",
+              request.mode === 'raw' &&
+              request?.options?.raw?.language === 'xml'
+                ? 'application/xml'
+                : 'application/json',
+            name: 'Content-Type',
+            description: '',
+            type: 'text',
           },
         ],
         code: defaultStatusCode || 200,
@@ -112,7 +112,7 @@ export const createApi = async (req: Request, res: Response) => {
 
     return res.status(201).json({
       api: api,
-      message: "Api saved successfully",
+      message: 'Api saved successfully',
     });
   } catch (error) {
     console.log(error);
@@ -132,30 +132,30 @@ export const createExample = async (req: Request, res: Response) => {
     const url = `${request.url?.raw}?${(request.url.query || [])
       .filter((query: any) => !query.disabled)
       .map((query: any) => `${query.key}=${query.value}`)
-      .join("&")}`;
+      .join('&')}`;
 
     const parsedURL: any = validateAPI(url, request, response);
 
     const apiBody = {
       mode: request.body?.mode,
-      raw: request.body.raw || "",
+      raw: request.body.raw || '',
       options: request.body?.options,
     };
 
-    let apiUrlRaw = request.url.raw.split("?", 2)[0];
+    let apiUrlRaw = request.url.raw.split('?', 2)[0];
     if (request.url.query.length > 0) {
       apiUrlRaw = `${request.url.raw}?${(request.url.query || [])
         .filter((query: any) => !query.disabled)
         .map((query: any) => `${query.key}=${query.value}`)
-        .join("&")}`;
+        .join('&')}`;
     }
 
     const apiUrl = {
       raw: apiUrlRaw,
       protocol: parsedURL.protocol,
       port: parsedURL.port,
-      host: parsedURL.hostname.split("."),
-      path: parsedURL.pathname.split("/"),
+      host: parsedURL.hostname.split('.'),
+      path: parsedURL.pathname.split('/'),
       query: request.url.query,
     };
 
@@ -171,12 +171,12 @@ export const createExample = async (req: Request, res: Response) => {
       originalRequest: apiRequest,
       header: [
         {
-          key: "Content-Type",
+          key: 'Content-Type',
           value:
-            request.mode === "xml" ? "application/xml" : "application/json",
-          name: "Content-Type",
-          description: "",
-          type: "text",
+            request.mode === 'xml' ? 'application/xml' : 'application/json',
+          name: 'Content-Type',
+          description: '',
+          type: 'text',
         },
       ],
       code: response.code || 200,
@@ -184,7 +184,7 @@ export const createExample = async (req: Request, res: Response) => {
     };
 
     if (api.response.find((r) => r.name === apiResponse.name))
-      throw new Error("Duplicate example name within same api");
+      throw new Error('Duplicate example name within same api');
 
     api.response.push(apiResponse);
 
@@ -209,7 +209,7 @@ export const updateApi = async (req: Request, res: Response) => {
     const url = `${request.url?.raw}?${(request.url.query || [])
       .filter((query: any) => !query.disabled)
       .map((query: any) => `${query.key}=${query.value}`)
-      .join("&")}`;
+      .join('&')}`;
 
     const duplicateName = await Api.findOne({
       _id: {
@@ -220,30 +220,30 @@ export const updateApi = async (req: Request, res: Response) => {
     });
 
     if (duplicateName)
-      throw new Error("Another name already exists in this collection");
+      throw new Error('Another name already exists in this collection');
 
     const parsedURL: any = validateAPI(url, request, response);
 
     const apiBody = {
       mode: request.body?.mode,
-      raw: request.body.raw || "",
+      raw: request.body.raw || '',
       options: request.body?.options,
     };
 
-    let apiUrlRaw = request.url.raw.split("?", 2)[0];
+    let apiUrlRaw = request.url.raw.split('?', 2)[0];
     if (request.url.query.length > 0) {
       apiUrlRaw = `${request.url.raw}?${(request.url.query || [])
         .filter((query: any) => !query.disabled)
         .map((query: any) => `${query.key}=${query.value}`)
-        .join("&")}`;
+        .join('&')}`;
     }
 
     const apiUrl = {
       raw: apiUrlRaw,
       protocol: parsedURL.protocol,
       port: parsedURL.port,
-      host: parsedURL.hostname.split("."),
-      path: parsedURL.pathname.split("/"),
+      host: parsedURL.hostname.split('.'),
+      path: parsedURL.pathname.split('/'),
       query: request.url.query,
     };
 
@@ -255,6 +255,7 @@ export const updateApi = async (req: Request, res: Response) => {
     };
 
     api.request = apiRequest;
+    api.name = name;
 
     await api.save();
 
@@ -277,7 +278,7 @@ export const updateExample = async (req: Request, res: Response) => {
     const url = `${request.url?.raw}?${(request.url.query || [])
       .filter((query: any) => !query.disabled)
       .map((query: any) => `${query.key}=${query.value}`)
-      .join("&")}`;
+      .join('&')}`;
 
     const parsedURL: any = validateAPI(url, request, response);
 
@@ -285,22 +286,22 @@ export const updateExample = async (req: Request, res: Response) => {
       (r) => r._id.toString() === active_example_id
     );
 
-    if (!example) throw new Error("Could not find example");
+    if (!example) throw new Error('Could not find example');
 
-    let apiUrlRaw = request.url.raw.split("?", 2)[0];
+    let apiUrlRaw = request.url.raw.split('?', 2)[0];
     if (request.url.query.length > 0) {
       apiUrlRaw = `${request.url.raw}?${(request.url.query || [])
         .filter((query: any) => !query.disabled)
         .map((query: any) => `${query.key}=${query.value}`)
-        .join("&")}`;
+        .join('&')}`;
     }
 
     const apiUrl = {
       raw: apiUrlRaw,
       protocol: parsedURL.protocol,
       port: parsedURL.port,
-      host: parsedURL.hostname.split("."),
-      path: parsedURL.pathname.split("/"),
+      host: parsedURL.hostname.split('.'),
+      path: parsedURL.pathname.split('/'),
       query: request.url.query,
     };
 
@@ -316,7 +317,7 @@ export const updateExample = async (req: Request, res: Response) => {
         (r) => r.name === response.name && r._id !== example._id
       )
     )
-      throw new Error("Duplicate example name within same api");
+      throw new Error('Duplicate example name within same api');
 
     example.name = response.name;
     example.body = response.body;
@@ -330,15 +331,15 @@ export const updateExample = async (req: Request, res: Response) => {
     );
 
     const conentTypeHeader = example.header.find(
-      (header: any) => header.key === "Content-Type"
+      (header: any) => header.key === 'Content-Type'
     );
     if (!conentTypeHeader) {
       example.header.push({
-        key: "Content-Type",
-        value: request.mode === "xml" ? "application/xml" : "application/json",
-        name: "Content-Type",
-        description: "",
-        type: "text",
+        key: 'Content-Type',
+        value: request.mode === 'xml' ? 'application/xml' : 'application/json',
+        name: 'Content-Type',
+        description: '',
+        type: 'text',
       });
     }
 
@@ -364,43 +365,43 @@ const validateAPI = (url: any, request: any, response: any) => {
   try {
     parsedURL = new URL(url);
   } catch (error) {
-    throw new Error("Malformed URL: " + url);
+    throw new Error('Malformed URL: ' + url);
   }
 
-  if (request.body.mode === "raw") {
-    if (request.body.options.raw?.language === "json") {
+  if (request.body.mode === 'raw') {
+    if (request.body.options.raw?.language === 'json') {
       try {
         if (request.body.raw) JSON.parse(request.body.raw);
       } catch (error) {
-        throw new Error("Malformed Request body json");
+        throw new Error('Malformed Request body json');
       }
 
       try {
         if (response.body) JSON.parse(response.body);
       } catch (error) {
-        throw new Error("Malformed Response body json");
+        throw new Error('Malformed Response body json');
       }
     }
-    if (request.body.options.raw?.language === "xml") {
+    if (request.body.options.raw?.language === 'xml') {
       try {
         const validXML = XMLValidator.validate(request.body.raw);
-        if (!validXML) throw new Error("Malformed Request body xml");
+        if (!validXML) throw new Error('Malformed Request body xml');
       } catch (error) {
-        throw new Error("Malformed Response body xml");
+        throw new Error('Malformed Response body xml');
       }
 
       try {
-        const validXML = XMLValidator.validate(response.body || "");
-        if (!validXML) throw new Error("Malformed Response body xml");
+        const validXML = XMLValidator.validate(response.body || '');
+        if (!validXML) throw new Error('Malformed Response body xml');
       } catch (error) {
-        throw new Error("Malformed Response body xml");
+        throw new Error('Malformed Response body xml');
       }
     }
   } else {
     try {
       if (response.body) JSON.parse(response.body);
     } catch (error) {
-      throw new Error("Malformed Response body json");
+      throw new Error('Malformed Response body json');
     }
   }
 
@@ -416,7 +417,7 @@ export const deleteExample = async (req: Request, res: Response) => {
 
     if (api.response.length === 0)
       return res.status(201).json({
-        message: "Example deleted successfully",
+        message: 'Example deleted successfully',
       });
 
     let i = 0;
@@ -427,13 +428,13 @@ export const deleteExample = async (req: Request, res: Response) => {
     }
 
     if (i > api.response.length)
-      throw new Error("Example not found under this api");
+      throw new Error('Example not found under this api');
 
     api.response.splice(i, 1);
     await api.save();
 
     return res.status(201).json({
-      message: "Example deleted successfully",
+      message: 'Example deleted successfully',
     });
   } catch (error) {
     console.log(error);
@@ -455,7 +456,7 @@ export const deleteRequest = async (req: Request, res: Response) => {
     });
 
     return res.status(201).json({
-      message: "Request deleted successfully",
+      message: 'Request deleted successfully',
     });
   } catch (error) {
     console.log(error);

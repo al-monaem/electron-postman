@@ -4,6 +4,7 @@ import storage from 'redux-persist/lib/storage'
 import { persistReducer } from 'redux-persist'
 import tabReducer from './mock/tabSlice'
 import userReducer from './user/userSlice'
+import settingsReducer from './user/settingsSlice'
 
 const persistConfig = {
   key: 'root',
@@ -13,7 +14,8 @@ const persistConfig = {
 
 const reducer = combineReducers({
   tabReducer: tabReducer,
-  userReducer: userReducer
+  userReducer: userReducer,
+  settingsReducer: settingsReducer
 })
 
 const persistedReducer = persistReducer(persistConfig, reducer)

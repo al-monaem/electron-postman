@@ -3,16 +3,21 @@ import axios from 'axios'
 import store from '../store'
 import { clearUser } from '../store/user/userSlice'
 
+const BASE_URL =
+  import.meta.env.VITE_APP_ENV === 'production'
+    ? import.meta.env.VITE_BACKEND_URL_PROD
+    : import.meta.env.VITE_BACKEND_URL
+
 const axiosAppInstance = axios.create({
-  baseURL: `${import.meta.env.VITE_BACKEND_URL}/app`
+  baseURL: `${BASE_URL}/app`
 })
 
 export const axiosMockInstance = axios.create({
-  baseURL: `${import.meta.env.VITE_BACKEND_URL}`
+  baseURL: `${BASE_URL}`
 })
 
 export const axiosAuthInstance = axios.create({
-  baseURL: `${import.meta.env.VITE_BACKEND_URL}/auth`
+  baseURL: `${BASE_URL}/auth`
 })
 
 // const refreshAccessToken = (refreshToken) => {

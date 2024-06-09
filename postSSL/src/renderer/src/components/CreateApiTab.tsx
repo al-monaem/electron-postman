@@ -10,6 +10,7 @@ import { TabTypes } from '@renderer/utilities/TabTypes'
 import { sendMockRequest } from '@renderer/controllers/api.controller'
 import _ from 'lodash'
 import { useState } from 'react'
+import NProgress from 'nprogress'
 
 const requestOptions = [
   {
@@ -35,8 +36,6 @@ const requestOptions = [
 ]
 
 const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) => {
-  const [_api] = useState(JSON.parse(JSON.stringify(props.api)))
-
   const { token } = theme.useToken()
   const [sendingRequest, setSendingRequest] = useState(false)
 
@@ -75,11 +74,12 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
       api.request.url.query = []
     }
 
-    if (!_.isEqual(api, _api)) {
-      api.modified = true
-    } else {
-      api.modified = false
-    }
+    // if (!_.isEqual(api, _api)) {
+    //   api.modified = true
+    // } else {
+    //   api.modified = false
+    // }
+    api.modified = true
 
     store.dispatch(updateApi(api))
   }
@@ -100,17 +100,21 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
     const api: Api = JSON.parse(JSON.stringify(props.api))
     api.request.method = value
 
-    if (_.isEqual(api, _api)) {
-      api.modified = false
-    } else {
-      api.modified = true
-    }
+    // if (_.isEqual(api, _api)) {
+    //   api.modified = false
+    // } else {
+    //   api.modified = true
+    // }
+
+    api.modified = true
 
     store.dispatch(updateApi(api))
   }
 
   const handleSendRequest = async () => {
+    NProgress.configure({ showSpinner: false, parent: '#response' })
     setSendingRequest(true)
+    NProgress.start()
     const api: any = JSON.parse(JSON.stringify(props.api))
 
     const headers = api.request.header.reduce((acc: any, header: any) => {
@@ -146,7 +150,7 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
 
     if (response.headers['content-type'].includes('application/json')) {
       api.response.mode = 'json'
-      api.response.body = JSON.stringify(response.data)
+      api.response.body = JSON.stringify(response.data, null, 2)
       api.response.options = {
         raw: {
           language: 'json'
@@ -171,6 +175,7 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
     }
 
     store.dispatch(updateApi(api))
+    NProgress.done()
     setSendingRequest(false)
   }
 
@@ -293,7 +298,7 @@ const CreateApiTab = (props: { api: any; tabIndex: string; create: boolean }) =>
           ]}
         />
       </div>
-      <div className="flex-grow border-t relative">
+      <div id="response" className="flex-grow border-t relative">
         <Tabs
           size="small"
           className="!ml-1"

@@ -34,18 +34,17 @@ const BreadCrumb = ({ children, tab, create }) => {
     if (tab.type !== TabTypes.API_RESPONSE && tab.type !== TabTypes.CREATE_API_RESPONSE) {
       item.name = e.target.value
 
-      if (!_.isEqual(item, _api)) item.modified = true
-      else item.modified = false
+      // if (!_.isEqual(item, _api)) item.modified = true
+      // else item.modified = false
+      item.modified = true
 
       store.dispatch(updateBasics(item))
     } else {
       item.response.name = e.target.value
 
-      console.log(item)
-      console.log(_api)
-
-      if (!_.isEqual(item, _api)) item.modified = true
-      else item.modified = false
+      // if (!_.isEqual(item, _api)) item.modified = true
+      // else item.modified = false
+      item.modified = true
 
       store.dispatch(updateApi(item))
     }

@@ -70,7 +70,7 @@ const tabSlice = createSlice({
                   }
                 },
                 url: {
-                  raw: `${import.meta.env.VITE_BACKEND_URL}/${action.payload.collection_id}`
+                  raw: `${import.meta.env.VITE_APP_ENV === 'production' ? import.meta.env.VITE_BACKEND_URL_PROD : import.meta.env.VITE_BACKEND_URL}/${action.payload.collection_id}`
                 }
               },
               response: {
